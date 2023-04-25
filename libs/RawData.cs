@@ -36,7 +36,7 @@ namespace libs
             {
                 for (int i = 1; i < NumOfNodes - 1; ++i)
                 {
-                    GridNodes[i] = Left + i * (Right - Left) / NumOfNodes;
+                    GridNodes[i] = Left + i * (Right - Left) / (NumOfNodes - 1);
                 }
             } 
             else
