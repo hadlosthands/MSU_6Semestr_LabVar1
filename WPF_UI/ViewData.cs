@@ -13,7 +13,7 @@ using System.Windows.Input;
 
 namespace WPF_UI
 {
-    public class ViewData
+    public class ViewData: IDataErrorInfo
     {
         public double Left { get; set; }
         public double Right { get; set; }
@@ -29,8 +29,9 @@ namespace WPF_UI
         public ViewData()
         {
             Left = 0;
-            Right = 1;
+            Right = 10;
             NumOfNodes = 2;
+            SplineNodes = 2;
             UniformityCheck = true;
             RawData = new RawData(0, 1, 2, true, CreationFunctions.LinearFunction);
             SplineData = null;
@@ -114,6 +115,39 @@ namespace WPF_UI
                 _ => FRawEnum.LinearFunction
             };
             return fRawEnum;
+        }
+
+        public string Error
+        {
+            get { return "Введены некорректные данные"; }
+        }
+
+        public string this[string columnName]
+        {
+            get
+            {
+                string result = String.Empty;
+                switch (columnName)
+                {
+                    case "Left":
+                        if (Left > Right)
+                            result = "Левая граница должна быть меньше правой";
+                        break;
+                    case "Right":
+                        if (Right < Right)
+                            result = "Правая граница должна быть больше левой";
+                        break;
+                    case "NumOfNodes":
+                        if (NumOfNodes < 2)
+                            result = "Должно быть хотя бы 2 точки у интерполируемой функции!";
+                        break;
+                    case "SplineNodes":
+                        if (SplineNodes < 2)
+                            result = "Интерполяция должна быть проведена хотя бы в 2 точках!";
+                        break;
+                }
+                return result;
+            }
         }
     }
 }

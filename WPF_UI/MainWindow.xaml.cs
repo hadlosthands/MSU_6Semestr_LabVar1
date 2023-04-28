@@ -20,13 +20,17 @@ namespace WPF_UI
 {
     public partial class MainWindow : Window
     {
-        ViewData viewData = new();
+        readonly ViewData viewData = new();
+        OxyPlotModel Plot;
+        public static RoutedCommand LoadFromControlsCommand = new("LoadFromControls", typeof(MainWindow));
+        public static RoutedCommand LoadFromFileCommand = new("LoadFromFile", typeof(MainWindow));
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = viewData;
+            this.DataContext = viewData;
             functions.ItemsSource = Enum.GetValues(typeof(FRawEnum));
             functions.SelectedIndex = 0;
+            this.CommandBindings.Add(new CommandBinding(ApplicationCommands.Save, SaveFileClick, CanSaveCommandHandler));
         }
 
         private void LoadDataClick(object sender, RoutedEventArgs e)
@@ -48,7 +52,7 @@ namespace WPF_UI
         {
             try
             {
-                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                SaveFileDialog saveFileDialog = new();
                 if (saveFileDialog.ShowDialog() == true)
                     viewData.RawData.Save(saveFileDialog.FileName);
             }
@@ -61,7 +65,7 @@ namespace WPF_UI
         {
             try
             {
-                OpenFileDialog openFileDialog = new OpenFileDialog();
+                OpenFileDialog openFileDialog = new();
                 if (openFileDialog.ShowDialog() == true)
                     viewData.LoadFromFile(openFileDialog.FileName);
                 int result = viewData.ComputeSpline();
@@ -83,12 +87,75 @@ namespace WPF_UI
                 }
                 splineDataListBox.ItemsSource = viewData.SplineData.SplineItemList;
                 integralTextBlock.Text = viewData.SplineData.Integral.ToString();
+                DrawSpline();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
         }
+        private void DrawSpline()
+        {
+            try
+            {
+                Plot = new OxyPlotModel(viewData.SplineData, viewData.RawData);
+                SplinePlot.Model = Plot.plotModel;
+            }
+            catch (Exception ex)
+            {   
+                MessageBox.Show($"Ошибка отрисовки сплайна\n" + ex.Message);
+            }
+        }
+
+        private void LoadFromControlsCommandHandler(object sender, ExecutedRoutedEventArgs e)
+        {
+            LoadDataClick(sender, e);
+            DrawSpline();
+        }
+        private void CanLoadFromControlsCommandHandler(object sender, CanExecuteRoutedEventArgs e)
+        {
+            if (Validation.GetHasError(Bounds) || Validation.GetHasError(NumOfNodes) || Validation.GetHasError(SplineNodes))
+                e.CanExecute = false;
+            else
+                e.CanExecute = true;
+        }
+
+        private void LoadFromFileCommandHandler(object sender, ExecutedRoutedEventArgs e)
+        {
+            try
+            {
+                OpenFileDialog openFileDialog = new();
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    viewData.LoadFromFile(openFileDialog.FileName);
+                    DrawSpline();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        private void CanLoadFromFileCommandHandler(object sender, CanExecuteRoutedEventArgs e)
+        {
+            if (Validation.GetHasError(Bounds) || Validation.GetHasError(NumOfNodes) || Validation.GetHasError(SplineNodes))
+                e.CanExecute = false;
+            else 
+                e.CanExecute= true;
+        }
+
+        private void SaveCommandHandler(object sender, ExecutedRoutedEventArgs e)
+        {
+            SaveFileClick(sender, e);
+        }
+        private void CanSaveCommandHandler(object sender, CanExecuteRoutedEventArgs e)
+        {
+            if ((Validation.GetHasError(Bounds) || Validation.GetHasError(NumOfNodes)) && (viewData.RawData != null))
+                e.CanExecute = false;
+            else 
+                e.CanExecute = true;
+        }
+
     }
 }
 
@@ -140,8 +207,7 @@ namespace convs
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var input = value as string;
-            double output;
-            if (double.TryParse(input, out output))
+            if (double.TryParse(input, out double output))
                 return output;
             else
                 return DependencyProperty.UnsetValue;
@@ -163,8 +229,7 @@ namespace convs
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var input = value as string;
-            int output;
-            if (int.TryParse(input, out output))
+            if (int.TryParse(input, out int output))
                 return output;
             else
                 return DependencyProperty.UnsetValue;

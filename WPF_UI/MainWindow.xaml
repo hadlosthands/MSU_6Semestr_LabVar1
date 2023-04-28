@@ -5,49 +5,83 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPF_UI"
         xmlns:convs="clr-namespace:convs"
+        xmlns:oxy="http://oxyplot.org/wpf"  
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="MainWindow" Height="470" Width="800">
+        Title="MainWindow" Height="940" Width="800">
 
     <Window.Resources>
         <convs:RadioButtonConverter x:Key="r_Conv" />
         <convs:BoundsTextBoxConverter x:Key="b_Conv" />
         <convs:IntegerTextBoxConverter x:Key="i_Conv" />
         <convs:DoubleTextBoxConverter x:Key="d_Conv" />
+        <system:Boolean x:Key="True">True</system:Boolean>
+        <system:Boolean x:Key="False">False</system:Boolean>
     </Window.Resources>
+
+    <Window.CommandBindings>
+        <CommandBinding Command="{x:Static local:MainWindow.LoadFromControlsCommand}" Executed="LoadFromControlsCommandHandler" CanExecute="CanLoadFromControlsCommandHandler" />
+        <CommandBinding Command="ApplicationCommands.Save" Executed="SaveCommandHandler" CanExecute="CanSaveCommandHandler"/>
+        <CommandBinding Command="{x:Static local:MainWindow.LoadFromFileCommand}" Executed="LoadFromFileCommandHandler" CanExecute="CanLoadFromFileCommandHandler" />
+    </Window.CommandBindings>
 
     <Grid>
         <Menu VerticalAlignment="Top" HorizontalAlignment="Left" FontSize="14">
             <MenuItem Header="File">
-                <MenuItem Header="Save" Click="SaveFileClick"></MenuItem>
+                <MenuItem Header="Save" Command="ApplicationCommands.Save" CommandParameter="From MenuItem"></MenuItem>
             </MenuItem>
             <MenuItem Header="Execute">
-                <MenuItem Header="RawData from Controls" Click="LoadDataClick"></MenuItem>
-                <MenuItem Header="RawData from File" Click="LoadFileClick"></MenuItem>
+                <MenuItem Header="RawData from Controls" Command="{x:Static local:MainWindow.LoadFromControlsCommand}" CommandParameter="From MenuItem"></MenuItem>
+                <MenuItem Header="RawData from File" Command="{x:Static local:MainWindow.LoadFromFileCommand}" CommandParameter="From MenuItem"></MenuItem>
             </MenuItem>
         </Menu>
         <Label Content="Raw Data:" HorizontalAlignment="Left" Height="36" Margin="10,26,0,0" VerticalAlignment="Top" Width="376" FontSize="20" FontWeight="Black"/>
         <Label Content="Границы отрезка:" HorizontalAlignment="Left" Margin="10,67,0,0" VerticalAlignment="Top" Width="120"/>
-        <TextBox HorizontalAlignment="Left" Margin="135,67,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Height="26">
+        <TextBox Name="Bounds" HorizontalAlignment="Left" Margin="135,67,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Height="26">
             <TextBox.Text>
                 <MultiBinding Converter="{StaticResource b_Conv}">
-                    <Binding Path="Left"/>
-                    <Binding Path="Right"/>
+                    <Binding Path="Left">
+                        <Binding.ValidationRules>
+                            <DataErrorValidationRule/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                    <Binding Path="Right">
+                        <Binding.ValidationRules>
+                            <DataErrorValidationRule/>
+                        </Binding.ValidationRules>
+                    </Binding>
                 </MultiBinding>
             </TextBox.Text>
         </TextBox>
         <Label Content="Число узлов:" HorizontalAlignment="Left" Margin="10,98,0,0" VerticalAlignment="Top" Width="120"/>
-        <TextBox Text = "{Binding NumOfNodes}" HorizontalAlignment="Left" Margin="135,98,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Height="26"/>
+        <TextBox Name="NumOfNodes"  HorizontalAlignment="Left" Margin="135,98,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Height="26">
+            <TextBox.Text>
+                <Binding Path="NumOfNodes" Converter="{StaticResource i_Conv}">
+                    <Binding.ValidationRules>
+                        <DataErrorValidationRule/>
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
 
         <Label Content="Функция:" HorizontalAlignment="Left" Margin="260,67,0,0" Width="126" VerticalAlignment="Top"/>
         <ComboBox Name ="functions" SelectedItem ="{Binding Func}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="126" Margin="260,98,0,0" Height="26"/>
 
         <Label Content="Выбор сетки:" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="4.085,-2.548" Margin="10,143,0,0" Width="120" Height="26"/>
-        <RadioButton Name="UniformRB" Content="Uniform" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding Path=UniformityCheck, Converter={StaticResource r_Conv}}" Margin="138,143,0,0" RenderTransformOrigin="0.516,-0.084" Height="26" Width="117"/>
-        <RadioButton Name="NonUniformRB" Content="NonUniform" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding Path=UniformityCheck, Converter={StaticResource r_Conv}}" Margin="260,143,0,0" Height="26" Width="126"/>
+        <RadioButton Name="UniformRB" Content="Uniform" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding Path=UniformityCheck, Converter={StaticResource r_Conv}, ConverterParameter={StaticResource True}}" Margin="138,143,0,0" RenderTransformOrigin="0.516,-0.084" Height="26" Width="117"/>
+        <RadioButton Name="NonUniformRB" Content="NonUniform" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding UniformityCheck, ConverterParameter={StaticResource False}, Converter={StaticResource r_Conv}}" Margin="260,143,0,0" Height="26" Width="126"/>
         <Label Content="Spline Data:" HorizontalAlignment="Left" Height="36" Margin="10,181,0,0" VerticalAlignment="Top" Width="376" FontSize="20" FontWeight="Black"/>
 
         <Label Content="Число узлов сетки:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,222,0,0" Width="120" Height="26"/>
-        <TextBox Name ="SplineNumOfNodes" Text="{Binding SplineNodes, Converter={StaticResource i_Conv}}" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Margin="138,222,0,0" Height="26"/>
+        <TextBox Name ="SplineNodes" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Margin="138,222,0,0" Height="26">
+            <TextBox.Text>
+                <Binding Path="SplineNodes" Converter="{StaticResource i_Conv}">
+                    <Binding.ValidationRules>
+                        <DataErrorValidationRule/>
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
 
         <Label Content="Значение первой производной:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,253,0,0" Width="376"/>
         <Label Content="Левая граница:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="13,284,0,0" Width="120" Height="26"/>
@@ -55,9 +89,9 @@
         <TextBox Name ="LeftFirstDerivative" Text="{Binding LeftDer, Converter={StaticResource d_Conv}}" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Margin="138,283,0,0" Height="27"/>
         <TextBox Name ="RightFirstDerivative" Text="{Binding RightDer, Converter={StaticResource d_Conv}}" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Margin="138,315,0,0" Height="26"/>
 
-        <Button Click="LoadDataClick" Content="RawData from Controls" HorizontalAlignment="Left" Margin="200,386,0,0" VerticalAlignment="Top" Height="35" Width="186"/>
-        <Button Name="btnSaveFile" Content="Save" Click="SaveFileClick" HorizontalAlignment="Left" Margin="10,346,0,0" VerticalAlignment="Top" Width="376" Height="35"/>
-        <Button Name="btnLoadFile" Content="RawData from File" Click="LoadFileClick" HorizontalAlignment="Left" Margin="10,386,0,0" VerticalAlignment="Top" Width="180" Height="36"/>
+        <Button Content="RawData from Controls" HorizontalAlignment="Left" Margin="200,386,0,0" VerticalAlignment="Top" Height="35" Width="186" Command="{x:Static local:MainWindow.LoadFromControlsCommand}" CommandParameter="From Button"/>
+        <Button Name="btnSaveFile" Content="Save" HorizontalAlignment="Left" Margin="10,346,0,0" VerticalAlignment="Top" Width="376" Height="35" Command="ApplicationCommands.Save" CommandParameter="From Button"/>
+        <Button Name="btnLoadFile" Content="RawData from File" HorizontalAlignment="Left" Margin="10,386,0,0" VerticalAlignment="Top" Width="180" Height="36" Command="{x:Static local:MainWindow.LoadFromFileCommand}" CommandParameter="From Button"/>
 
         <Label Content="Значение интеграла:" HorizontalAlignment="Left" Margin="404,391,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.622,1.508" Height="26" Width="152"/>
         <TextBlock Name="integralTextBlock" HorizontalAlignment="Left" Margin="561,391,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="225" Height="26"/>
@@ -80,16 +114,17 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Coordinate: "/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=Coord}" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=Coord, StringFormat={}{0:0.0000}}" />
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="SplineValue: " />
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=Spline}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=Spline, StringFormat={}{0:0.0000}}"/>
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="FirstDerivative: "/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=FirstDer}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=FirstDer, StringFormat={}{0:0.0000}}"/>
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="SecondDerivative: "/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Path=SecondDer}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Path=SecondDer, StringFormat={}{0:0.0000}}"/>
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+        <oxy:PlotView x:Name="SplinePlot" HorizontalAlignment="Center" Margin="0,436,0,10" Width="780"/>
     </Grid>
 </Window>
