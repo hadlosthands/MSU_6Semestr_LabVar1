@@ -20,7 +20,7 @@ namespace WPF_UI
 {
     public partial class MainWindow : Window
     {
-        readonly ViewData viewData = new();
+        ViewData viewData = new();
         OxyPlotModel Plot;
         public static RoutedCommand LoadFromControlsCommand = new("LoadFromControls", typeof(MainWindow));
         public static RoutedCommand LoadFromFileCommand = new("LoadFromFile", typeof(MainWindow));
@@ -171,7 +171,6 @@ namespace convs
             try
             {
                 string result = values[0].ToString() + ";" + values[1].ToString();
-                MessageBox.Show(result.ToString());
                 return result;
             }
             catch
