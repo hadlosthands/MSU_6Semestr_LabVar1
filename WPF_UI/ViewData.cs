@@ -73,8 +73,9 @@ namespace WPF_UI
                 UniformityCheck = RawData.UniformityCheck;
                 Func = GetEnumFromFunc(RawData.Fraw);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                MessageBox.Show(ex.ToString());
                 throw;
             }
         }

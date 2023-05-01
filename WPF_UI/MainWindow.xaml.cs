@@ -128,6 +128,8 @@ namespace WPF_UI
                 if (openFileDialog.ShowDialog() == true)
                 {
                     viewData.LoadFromFile(openFileDialog.FileName);
+                    viewData.SplineData = new SplineData(viewData.RawData, viewData.LeftDer, viewData.RightDer, viewData.SplineNodes);             
+                    int res = viewData.SplineData.CreateSpline();
                     DrawSpline();
                 }
             }
@@ -169,6 +171,7 @@ namespace convs
             try
             {
                 string result = values[0].ToString() + ";" + values[1].ToString();
+                MessageBox.Show(result.ToString());
                 return result;
             }
             catch

@@ -28,12 +28,16 @@ namespace WPF_UI
             this.plotModel.Series.Clear();
             Legend legend = new Legend();
             LineSeries lineSeries = new LineSeries();
-            for (int js = 0; js < data.NumOfNodes; js++)
+            if (data != null)
             {
-                OxyColor color = (js == 0) ? OxyColors.Green : OxyColors.Blue;
-                lineSeries.Points.Add(new DataPoint(data.SplineItemList[js].Coord, data.SplineItemList[js].Spline));
-                lineSeries.Color = color;
-                lineSeries.Title = "Cubic spline interpolation";
+                this.plotModel.Series.Clear();
+                for (int js = 0; js < data.NumOfNodes; js++)
+                {
+                    OxyColor color = (js == 0) ? OxyColors.Green : OxyColors.Blue;
+                    lineSeries.Points.Add(new DataPoint(data.SplineItemList[js].Coord, data.SplineItemList[js].Spline));
+                    lineSeries.Color = color;
+                    lineSeries.Title = "Cubic spline interpolation";
+                }
             }
             plotModel.Legends.Add(legend);
             this.plotModel.Series.Add(lineSeries);
